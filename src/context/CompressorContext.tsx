@@ -82,6 +82,7 @@ export const CompressorProvider = ({ children }: { children: React.ReactNode }) 
         compressionRatio: img.compressionRatio,
         status: img.status,
         error: img.error,
+        compressionSettings: img.compressionSettings,
       }));
 
       localStorage.setItem('compressorImages', JSON.stringify(imagesToStore));
@@ -238,7 +239,8 @@ export const CompressorProvider = ({ children }: { children: React.ReactNode }) 
             compressedUrl,
             compressedSize,
             compressionRatio: parseFloat(compressionRatio),
-            status: 'compressed'
+            status: 'compressed',
+            compressionSettings: { ...settings } // Store the settings used for compression
           } : img
         )
       );

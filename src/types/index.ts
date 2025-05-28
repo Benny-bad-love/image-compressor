@@ -9,6 +9,7 @@ export interface ImageFile {
   compressionRatio?: number;
   status: 'pending' | 'compressing' | 'compressed' | 'error';
   error?: string;
+  compressionSettings?: CompressionSettings;
 }
 
 export interface CompressionSettings {

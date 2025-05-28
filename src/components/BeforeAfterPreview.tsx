@@ -13,6 +13,22 @@ const debug = (...args: any[]) => {
   }
 };
 
+// Helper function to compare compression settings
+const areSettingsEqual = (settings1: any, settings2: any): boolean => {
+  if (!settings1 || !settings2) return false;
+
+  return (
+    settings1.quality === settings2.quality &&
+    settings1.maxWidth === settings2.maxWidth &&
+    settings1.maxHeight === settings2.maxHeight &&
+    settings1.format === settings2.format &&
+    settings1.preserveExif === settings2.preserveExif &&
+    settings1.applySharpening === settings2.applySharpening &&
+    settings1.sharpeningAmount === settings2.sharpeningAmount &&
+    settings1.showSizeControls === settings2.showSizeControls
+  );
+};
+
 // Memoize the component to prevent unnecessary re-renders
 const BeforeAfterPreview = memo(function BeforeAfterPreview() {
   const { images, selectedImage, settings, setSelectedImage } = useCompressor();
@@ -32,11 +48,22 @@ const BeforeAfterPreview = memo(function BeforeAfterPreview() {
     ? images.find(img => img.id === selectedImage)
     : null;
 
+  // Determine if we should use compressed version or live preview
+  const shouldUseLivePreview = selectedImageData?.status === 'compressed' &&
+    selectedImageData?.compressionSettings &&
+    !areSettingsEqual(settings, selectedImageData.compressionSettings);
+
   // Setup preview URLs and sizes - memoize calculation
   const displayOriginalUrl = selectedImageData?.url; // Always use the original URL for the 'Original' side
-  const displayPreviewUrl = selectedImageData?.compressedUrl || livePreviewUrl;
-  const displayPreviewSize = selectedImageData?.compressedSize || livePreviewSize;
-  const displayPreviewRatio = selectedImageData?.compressionRatio || compressionRatio;
+  const displayPreviewUrl = shouldUseLivePreview
+    ? livePreviewUrl
+    : (selectedImageData?.compressedUrl || livePreviewUrl);
+  const displayPreviewSize = shouldUseLivePreview
+    ? livePreviewSize
+    : (selectedImageData?.compressedSize || livePreviewSize);
+  const displayPreviewRatio = shouldUseLivePreview
+    ? compressionRatio
+    : (selectedImageData?.compressionRatio || compressionRatio);
 
   // Debug information
   useEffect(() => {
@@ -46,9 +73,12 @@ const BeforeAfterPreview = memo(function BeforeAfterPreview() {
       selectedImageData,
       hasFile: selectedImageData?.file ? 'yes' : 'no',
       livePreview: livePreviewUrl ? 'yes' : 'no',
-      compressedUrl: selectedImageData?.compressedUrl ? 'yes' : 'no'
+      compressedUrl: selectedImageData?.compressedUrl ? 'yes' : 'no',
+      shouldUseLivePreview,
+      settingsChanged: selectedImageData?.compressionSettings ?
+        !areSettingsEqual(settings, selectedImageData.compressionSettings) : 'no-compression-settings'
     });
-  }, [images, selectedImage, selectedImageData, livePreviewUrl]);
+  }, [images, selectedImage, selectedImageData, livePreviewUrl, shouldUseLivePreview]);
 
   // Try to convert blob URL to data URL for the original image
   useEffect(() => {
@@ -623,10 +653,15 @@ const BeforeAfterPreview = memo(function BeforeAfterPreview() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6" id="before-after-preview-container">
       <h2 className="text-xl font-semibold mb-2">
-        {selectedImageData?.compressedUrl ? 'Before / After Comparison' : 'Live Preview'}
+        {selectedImageData?.compressedUrl && !shouldUseLivePreview ? 'Before / After Comparison' : 'Live Preview'}
         {isGeneratingPreview && (
           <span className="ml-2 text-sm text-primary-500 animate-pulse">
             (Updating...)
+          </span>
+        )}
+        {shouldUseLivePreview && (
+          <span className="ml-2 text-sm text-orange-500">
+            (Settings Changed - Live Preview)
           </span>
         )}
       </h2>
@@ -661,7 +696,7 @@ const BeforeAfterPreview = memo(function BeforeAfterPreview() {
         <div>
           {displayPreviewUrl && displayPreviewSize ? (
             <>
-              {selectedImageData?.compressedUrl ? 'Compressed' : 'Preview'}: {formatFileSize(displayPreviewSize)}
+              {shouldUseLivePreview ? 'Live Preview' : (selectedImageData?.compressedUrl ? 'Compressed' : 'Preview')}: {formatFileSize(displayPreviewSize)}
               {displayPreviewRatio && (
                 <span className="ml-2 text-green-600 dark:text-green-400">
                   ({displayPreviewRatio}x smaller)
@@ -873,7 +908,7 @@ const BeforeAfterPreview = memo(function BeforeAfterPreview() {
         </div>
         {displayPreviewUrl && (
           <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold rounded px-2 py-1 pointer-events-none">
-            {selectedImageData?.compressedUrl ? 'Compressed' : 'Live Preview'}
+            {shouldUseLivePreview ? 'Live Preview' : (selectedImageData?.compressedUrl ? 'Compressed' : 'Live Preview')}
           </div>
         )}
       </div>
