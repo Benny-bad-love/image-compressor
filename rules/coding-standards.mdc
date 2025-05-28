@@ -1,0 +1,36 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# SVG Tools Coding Standards
+
+Follow these standards when modifying or expanding the codebase:
+
+## General Principles
+- Keep components modular and focused on a single responsibility
+- Avoid large, monolithic files (like the original 950+ line page.tsx)
+- Use TypeScript types for all props, state, and function parameters
+- Always handle error cases and edge conditions
+
+## State Management
+- Use the context system for global state management
+- Create separate contexts for distinct domains
+- Context files should export both Provider and custom hook
+
+## Component Structure
+- Each component should have a clearly defined purpose
+- Break down complex UI elements into smaller components
+- Use client-side components when needing browser APIs
+- Organize CSS with Tailwind utility classes on single lines
+
+## Utilities
+- Create utility functions for reusable logic
+- Validate inputs in utility functions
+- Document public utility functions with JSDoc comments
+- Follow a functional approach to avoid side effects
+
+## Types
+- Define all types in the @app/types/index.ts file
+- Use explicit typing rather than `any`
+- Export types for reuse where needed
