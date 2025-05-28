@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { CompressorContextType, CompressionSettings, ImageFile } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import JSZip from 'jszip';
 
 const defaultSettings: CompressionSettings = {
   quality: 0.8,
@@ -290,6 +291,49 @@ export const CompressorProvider = ({ children }: { children: React.ReactNode }) 
     });
   }, [images, downloadImage]);
 
+  // Download all compressed images as a ZIP file
+  const downloadAsZip = useCallback(async () => {
+    const compressedImages = images.filter(img => img.status === 'compressed' && img.compressedUrl);
+
+    if (compressedImages.length === 0) {
+      return;
+    }
+
+    try {
+      const zip = new JSZip();
+
+      // Add each compressed image to the ZIP
+      for (const image of compressedImages) {
+        if (image.compressedUrl) {
+          // Fetch the blob from the URL
+          const response = await fetch(image.compressedUrl);
+          const blob = await response.blob();
+
+          // Add to ZIP with the compressed filename
+          const filename = `compressed_${image.name}`;
+          zip.file(filename, blob);
+        }
+      }
+
+      // Generate the ZIP file
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+      // Create download link
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `compressed_images_${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Clean up the URL
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error creating ZIP file:', error);
+    }
+  }, [images]);
+
   // Clear all images
   const clearImages = useCallback(() => {
     // Revoke all object URLs to avoid memory leaks
@@ -315,6 +359,7 @@ export const CompressorProvider = ({ children }: { children: React.ReactNode }) 
         compressAllImages,
         downloadImage,
         downloadAllImages,
+        downloadAsZip,
         clearImages,
         selectedImage,
         setSelectedImage,

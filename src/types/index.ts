@@ -33,6 +33,7 @@ export interface CompressorContextType {
   compressAllImages: () => Promise<void>;
   downloadImage: (id: string) => void;
   downloadAllImages: () => void;
+  downloadAsZip: () => Promise<void>;
   clearImages: () => void;
   selectedImage: string | null;
   setSelectedImage: (id: string | null) => void;
