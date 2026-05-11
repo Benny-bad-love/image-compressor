@@ -11,6 +11,8 @@ export default function SettingsPanel() {
     maxWidth: settings.maxWidth ?? 1920,
     maxHeight: settings.maxHeight ?? 1080,
     format: settings.format ?? 'jpeg',
+    filenameAffixPosition: settings.filenameAffixPosition ?? 'prefix',
+    filenameDelimiter: settings.filenameDelimiter ?? '_',
     preserveExif: settings.preserveExif ?? false,
     applySharpening: settings.applySharpening ?? false,
     sharpeningAmount: settings.sharpeningAmount ?? 0.5,
@@ -100,6 +102,41 @@ export default function SettingsPanel() {
             <option value="png">PNG</option>
             <option value="webp">WebP</option>
           </select>
+        </div>
+
+        {/* Output Filename */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="filenameAffixPosition" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Compression Label
+            </label>
+            <select
+              id="filenameAffixPosition"
+              value={safeSettings.filenameAffixPosition}
+              onChange={(e) => updateSettings({ filenameAffixPosition: e.target.value as 'prefix' | 'suffix' })}
+              className="border border-gray-300 rounded-md w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600"
+            >
+              <option value="prefix">Prefix: compression_filename</option>
+              <option value="suffix">Suffix: filename_compression</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="filenameDelimiter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Filename Delimiter
+            </label>
+            <select
+              id="filenameDelimiter"
+              value={safeSettings.filenameDelimiter}
+              onChange={(e) => updateSettings({ filenameDelimiter: e.target.value })}
+              className="border border-gray-300 rounded-md w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600"
+            >
+              <option value="_">Underscore (_)</option>
+              <option value="-">Hyphen (-)</option>
+              <option value=" ">Space</option>
+              <option value="">None</option>
+            </select>
+          </div>
         </div>
 
         {/* Preserve EXIF Toggle */}

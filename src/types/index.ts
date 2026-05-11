@@ -17,6 +17,8 @@ export interface CompressionSettings {
   maxWidth: number;
   maxHeight: number;
   format: 'jpeg' | 'png' | 'webp';
+  filenameAffixPosition: 'prefix' | 'suffix';
+  filenameDelimiter: string;
   preserveExif: boolean;
   applySharpening: boolean;
   sharpeningAmount?: number;

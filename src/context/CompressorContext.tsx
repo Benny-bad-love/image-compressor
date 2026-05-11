@@ -10,10 +10,41 @@ const defaultSettings: CompressionSettings = {
   maxWidth: 1920,
   maxHeight: 1080,
   format: 'jpeg',
+  filenameAffixPosition: 'prefix',
+  filenameDelimiter: '_',
   preserveExif: false,
   applySharpening: false,
   sharpeningAmount: 0.5,
   showSizeControls: true,
+};
+
+const COMPRESSION_AFFIX = 'compression';
+
+const outputExtensions: Record<CompressionSettings['format'], string> = {
+  jpeg: 'jpg',
+  png: 'png',
+  webp: 'webp',
+};
+
+const getBaseNameWithoutExtension = (filename: string) => {
+  const lastDotIndex = filename.lastIndexOf('.');
+
+  return lastDotIndex > 0 ? filename.slice(0, lastDotIndex) : filename;
+};
+
+const getOutputFilename = (image: ImageFile, fallbackSettings: CompressionSettings) => {
+  const filenameSettings = {
+    ...defaultSettings,
+    ...(image.compressionSettings ?? fallbackSettings),
+  };
+  const baseName = getBaseNameWithoutExtension(image.name);
+  const extension = outputExtensions[filenameSettings.format];
+  const delimiter = filenameSettings.filenameDelimiter ?? defaultSettings.filenameDelimiter;
+  const decoratedBaseName = filenameSettings.filenameAffixPosition === 'prefix'
+    ? `${COMPRESSION_AFFIX}${delimiter}${baseName}`
+    : `${baseName}${delimiter}${COMPRESSION_AFFIX}`;
+
+  return `${decoratedBaseName}.${extension}`;
 };
 
 const CompressorContext = createContext<CompressorContextType | null>(null);
@@ -276,11 +307,11 @@ export const CompressorProvider = ({ children }: { children: React.ReactNode }) 
 
     const a = document.createElement('a');
     a.href = image.compressedUrl;
-    a.download = `compressed_${image.name}`;
+    a.download = getOutputFilename(image, settings);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  }, [images]);
+  }, [images, settings]);
 
   // Download all compressed images
   const downloadAllImages = useCallback(() => {
@@ -310,7 +341,7 @@ export const CompressorProvider = ({ children }: { children: React.ReactNode }) 
           const blob = await response.blob();
 
           // Add to ZIP with the compressed filename
-          const filename = `compressed_${image.name}`;
+          const filename = getOutputFilename(image, settings);
           zip.file(filename, blob);
         }
       }
@@ -332,7 +363,7 @@ export const CompressorProvider = ({ children }: { children: React.ReactNode }) 
     } catch (error) {
       console.error('Error creating ZIP file:', error);
     }
-  }, [images]);
+  }, [images, settings]);
 
   // Clear all images
   const clearImages = useCallback(() => {
