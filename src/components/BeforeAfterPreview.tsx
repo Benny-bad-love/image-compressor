@@ -732,20 +732,20 @@ const BeforeAfterPreview = memo(function BeforeAfterPreview() {
         role="presentation"
         aria-label="Image comparison container"
       >
-        {/* Original Image (Background) */}
-        {displayOriginalUrl && (
+        {/* Preview Image (Background) */}
+        {(displayPreviewUrl || displayOriginalUrl) && (
           <div className="absolute inset-0 w-full h-full">
             <div className="relative w-full h-full">
               <img
-                src={displayOriginalUrl}
-                alt="Original"
+                src={displayPreviewUrl || displayOriginalUrl}
+                alt={displayPreviewUrl ? 'Compressed Preview' : 'Original'}
                 className="object-contain w-full h-full"
                 style={{
                   minWidth: '50px',
                   minHeight: '50px'
                 }}
                 onError={(e) => {
-                  debug('Original image (displayOriginalUrl) failed to load');
+                  debug('Preview background image failed to load');
                   (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZWVlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIj5JbWFnZSBMb2FkIEVycm9yPC90ZXh0Pjwvc3ZnPg==';
                 }}
               />
@@ -756,7 +756,7 @@ const BeforeAfterPreview = memo(function BeforeAfterPreview() {
         {/* Preview with slider */}
         {displayPreviewUrl ? (
           <>
-            {/* Compressed/Preview Image (with clip region) */}
+            {/* Original Image (with clip region) */}
             <div
               className="absolute inset-0 h-full overflow-hidden"
               style={{
@@ -772,15 +772,15 @@ const BeforeAfterPreview = memo(function BeforeAfterPreview() {
                 }}
               >
                 <img
-                  src={displayPreviewUrl}
-                  alt="Compressed Preview"
+                  src={displayOriginalUrl || ''}
+                  alt="Original"
                   className="object-contain w-full h-full"
                   style={{
                     minWidth: '50px',
                     minHeight: '50px'
                   }}
                   onError={(e) => {
-                    debug('Preview image (displayPreviewUrl) failed to load');
+                    debug('Original image (displayOriginalUrl) failed to load');
                     (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZWVlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIj5QcmV2aWV3IExvYWQgRXJyb3I8L3RleHQ+PC9zdmc+';
                   }}
                 />
@@ -833,7 +833,7 @@ const BeforeAfterPreview = memo(function BeforeAfterPreview() {
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={Math.round(sliderPosition)}
-                aria-valuetext={`${Math.round(sliderPosition)}% preview image, ${Math.round(100 - sliderPosition)}% original image`}
+                aria-valuetext={`${Math.round(sliderPosition)}% original image, ${Math.round(100 - sliderPosition)}% preview image`}
                 onKeyDown={handleKeyDown}
               >
                 <svg
