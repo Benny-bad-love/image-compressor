@@ -367,16 +367,23 @@ export const CompressorProvider = ({ children }: { children: React.ReactNode }) 
 
   // Clear all images
   const clearImages = useCallback(() => {
-    // Revoke all object URLs to avoid memory leaks
-    images.forEach(image => {
-      URL.revokeObjectURL(image.url);
-      if (image.compressedUrl) URL.revokeObjectURL(image.compressedUrl);
+    setImages(prevImages => {
+      // Revoke all object URLs to avoid memory leaks
+      prevImages.forEach(image => {
+        URL.revokeObjectURL(image.url);
+        if (image.compressedUrl) URL.revokeObjectURL(image.compressedUrl);
+      });
+
+      return [];
     });
 
-    setImages([]);
     setSelectedImage(null);
     localStorage.removeItem('compressorImages');
-  }, [images]);
+  }, []);
+
+  useEffect(() => {
+    clearImages();
+  }, [clearImages]);
 
   return (
     <CompressorContext.Provider
